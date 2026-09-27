@@ -60,17 +60,65 @@ void UpdateCamera(Camera3D* camera, CameraMode mode) {
         const float nz = view.x * s + view.z * c;
         camera->position = Vector3Add(camera->target, {nx, view.y, nz});
     } else if (mode == CameraMode::FirstPerson || mode == CameraMode::Free) {
-        const float speed = 5.0f * dt;
+        // --- Mouse look ----------------------------------------------------
+        // Mouse delta yaws (around the world up) and pitches (around the local
+        // right vector) the view direction. Pitch is clamped so you cannot flip
+        // over the poles. Mouse-look is only meaningful while the cursor is
+        // captured (DisableCursor); when the cursor is free we skip look so the
+        // camera does not spin while the user interacts with UI.
+        const float sensitivity = 0.003f; // radians per pixel of mouse movement
         Vector3 forward = Vector3Normalize(Vector3Subtract(camera->target, camera->position));
+        if (IsCursorHidden()) {
+            const Vector2 mouseDelta = GetMouseDelta();
+            const float yaw   =  mouseDelta.x * sensitivity;  // mouse right -> turn right
+            const float pitch = -mouseDelta.y * sensitivity;  // mouse up -> look up
+
+            // Current pitch angle (from the forward vector's Y component), so we
+            // can clamp the new pitch to just under +/- 90 degrees.
+            const float currentPitch = std::asin(std::clamp(forward.y, -1.0f, 1.0f));
+            const float maxPitch = 1.55334f; // ~89 degrees
+            float newPitch = std::clamp(currentPitch + pitch, -maxPitch, maxPitch);
+            const float appliedPitch = newPitch - currentPitch;
+
+            // Yaw: rotate forward around the world up axis (Y).
+            if (yaw != 0.0f) {
+                const float c = std::cos(yaw), s = std::sin(yaw);
+                const float nx = forward.x * c - forward.z * s;
+                const float nz = forward.x * s + forward.z * c;
+                forward = Vector3Normalize({nx, forward.y, nz});
+            }
+            // Pitch: rotate forward around the local right axis.
+            if (appliedPitch != 0.0f) {
+                Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, {0, 1, 0}));
+                const float c = std::cos(appliedPitch), s = std::sin(appliedPitch);
+                // Rodrigues' rotation of `forward` about `right` by appliedPitch.
+                Vector3 cross = Vector3CrossProduct(right, forward);
+                const float dot = right.x * forward.x + right.y * forward.y + right.z * forward.z;
+                forward = Vector3Normalize({
+                    forward.x * c + cross.x * s + right.x * dot * (1 - c),
+                    forward.y * c + cross.y * s + right.y * dot * (1 - c),
+                    forward.z * c + cross.z * s + right.z * dot * (1 - c),
+                });
+            }
+        }
+
+        // --- WASD (+ vertical) movement ------------------------------------
+        const float speed = 5.0f * dt;
         Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, camera->up));
         Vector3 move{};
         if (IsKeyDown(KeyboardKey::W)) move = Vector3Add(move, forward);
         if (IsKeyDown(KeyboardKey::S)) move = Vector3Subtract(move, forward);
         if (IsKeyDown(KeyboardKey::D)) move = Vector3Add(move, right);
         if (IsKeyDown(KeyboardKey::A)) move = Vector3Subtract(move, right);
+        // Free mode also moves straight up/down; first-person stays on its plane.
+        if (mode == CameraMode::Free) {
+            if (IsKeyDown(KeyboardKey::Space))     move = Vector3Add(move, {0, 1, 0});
+            if (IsKeyDown(KeyboardKey::LeftShift)) move = Vector3Subtract(move, {0, 1, 0});
+        }
         move = Vector3Scale(move, speed);
         camera->position = Vector3Add(camera->position, move);
-        camera->target = Vector3Add(camera->target, move);
+        // Keep the target one unit ahead along the (possibly rotated) forward.
+        camera->target = Vector3Add(camera->position, forward);
     }
 }
 
