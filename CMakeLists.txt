@@ -16,8 +16,6 @@ add_library(MeowyEngine STATIC
         src/graphics/draw.cpp
         src/graphics/draw.hpp
         src/meowyengine.hpp
-        src/graphics/input.cpp
-        src/graphics/input.hpp
 
 )
 
