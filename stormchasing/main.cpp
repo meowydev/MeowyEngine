@@ -16,9 +16,20 @@ int main() {
 
             mew::ClearScreen(meowyrender::BLACK);
 
-            // ImGui: raw widgets between StartDraw / StopDraw. Begin needs a
-            // window name, and every Begin needs a matching End.
             ImGui::Begin("StormChasing Debug");
+            ImGui::Text("Version: Latest (GIT)");
+            if (ImGui::Button("Action"))
+                ImGui::OpenPopup("Sample");
+
+            if (ImGui::BeginPopup("Sample"))
+            {
+                ImGui::Text("Hello, World");
+                if (ImGui::Button("Close"))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
 
             ImGui::End();
 
