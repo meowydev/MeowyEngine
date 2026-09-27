@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>com.meowy.meowyrender.showcase</string>
+<key>CFBundleExecutable</key><string>visionos_showcase</string>
+<key>CFBundleName</key><string>MeowyRender</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleVersion</key><string>1</string>
+<key>CFBundleShortVersionString</key><string>0.1.0</string>
+<key>LSRequiresIPhoneOS</key><true/>
+<key>UIDeviceFamily</key><array><integer>7</integer></array>
+<key>UIApplicationSceneManifest</key><dict>
+    <key>UIApplicationSupportsMultipleScenes</key><false/>
+    <key>UISceneConfigurations</key><dict>
+        <key>UIWindowSceneSessionRoleApplication</key><array><dict>
+            <key>UISceneConfigurationName</key><string>MeowyRender</string>
+            <key>UISceneDelegateClassName</key><string>MRSceneDelegate</string>
+        </dict></array>
+    </dict>
+</dict>
+</dict></plist>

@@ -1,0 +1,6 @@
+#pragma once
+namespace meowyrender::backend {
+inline constexpr const char* PbrFunctions=R"(
+@MEOWY_PBR_SOURCE@
+)";
+}
